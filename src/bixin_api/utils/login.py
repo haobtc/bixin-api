@@ -2,7 +2,7 @@ import json
 
 import time
 
-from poim.storage.abstract import NaiveStorageBackend
+from ..storage.abstract import NaiveStorageBackend
 
 
 def mk_qr_code_cls(storage_backend):
@@ -50,7 +50,7 @@ def mk_qr_code_cls(storage_backend):
         @classmethod
         def new(cls, poim_client, session_id, is_app=True):
             """
-            :type poim_client: poim.client.Client
+            :type poim_client: bixin_api.client.Client
             """
             url = poim_client.get_login_qr_code(
                 qr_code_id=session_id,

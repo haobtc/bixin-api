@@ -6,7 +6,7 @@ from urllib.parse import urljoin, urlencode
 import pendulum
 import requests
 
-from poim.constants import PLATFORM_SERVER
+from .constants import PLATFORM_SERVER
 from .exceptions import APIError
 from . import constants as csts
 

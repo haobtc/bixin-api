@@ -1,11 +1,11 @@
 import time
 
-from poim.storage.abstract import NaiveStorageBackend
+from .abstract import NaiveStorageBackend
 
 
 class RedisStore(NaiveStorageBackend):
 
-    _prefix = "poim."
+    _prefix = "bixin_api."
 
     def __init__(self, redis_client):
         """
@@ -14,7 +14,7 @@ class RedisStore(NaiveStorageBackend):
         self.client = redis_client
 
     def _get_key(self, the_key):
-        return "%s.%s" % (self._prefix, the_key)
+        return "%s%s" % (self._prefix, the_key)
 
     @classmethod
     def get_ttl(cls, expire_at):

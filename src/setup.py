@@ -11,11 +11,11 @@ requires = (
 
 
 setup(
-    name='poim',
+    name='bixin-api',
     version='0.0.1',
     packages=find_packages(here),
     license='MIT',
     author='the-chosen-ones',
-    description='POIM api wrapper',
+    description='BixinAPI api wrapper',
     install_requires=requires,
 )

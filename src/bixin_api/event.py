@@ -1,6 +1,6 @@
 import json
 
-from poim.crypto import PRPCrypt
+from .crypto import PRPCrypt
 
 
 SUB_LOGIN = 'vendor_qr_login'
