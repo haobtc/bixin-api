@@ -12,7 +12,7 @@ def mk_qr_code_cls(storage_backend):
 
     class QRCode:
         """
-        :type _store: poim.storage.abstract.NaiveStorageBackend
+        :type _store: bixin_api.storage.abstract.NaiveStorageBackend
         """
 
         _key_prefix = 'login.'
@@ -21,14 +21,14 @@ def mk_qr_code_cls(storage_backend):
         def __init__(
                 self, session_id,
                 url, is_bind, expire_at=None,
-                poim_user_id=None,
+                bixin_user_id=None,
         ):
             if self._store is None:
                 raise RuntimeError("Store should be set before QRCode instantiation.")
             # 如果登录了，则is_bind应该被标记为True
             self.session_id = session_id
             self.url = url
-            self.poim_user_id = poim_user_id
+            self.bixin_user_id = bixin_user_id
             self.is_bind = is_bind
             self.expire_at = expire_at or time.time() + 360
 
@@ -42,17 +42,17 @@ def mk_qr_code_cls(storage_backend):
             return {
                 'session_id': self.session_id,
                 'url': self.url,
-                'poim_user_id': self.poim_user_id,
+                'bixin_user_id': self.bixin_user_id,
                 'is_bind': self.is_bind,
                 'expire_at': self.expire_at,
             }
 
         @classmethod
-        def new(cls, poim_client, session_id, is_app=True):
+        def new(cls, bixin_client, session_id, is_app=True):
             """
-            :type poim_client: bixin_api.client.Client
+            :type bixin_client: bixin_api.client.Client
             """
-            url = poim_client.get_login_qr_code(
+            url = bixin_client.get_login_qr_code(
                 qr_code_id=session_id,
                 is_app=is_app,
             )
@@ -63,10 +63,10 @@ def mk_qr_code_cls(storage_backend):
             )
 
         @classmethod
-        def get_or_create(cls, poim_client, session_id, is_app=True):
+        def get_or_create(cls, bixin_client, session_id, is_app=True):
             qrcode = cls.get_unexpired(session_id)
             if qrcode is None:
-                qrcode = cls.new(poim_client, session_id, is_app=is_app)
+                qrcode = cls.new(bixin_client, session_id, is_app=is_app)
             return qrcode
 
         @classmethod
