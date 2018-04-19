@@ -5,12 +5,12 @@ import time
 from ..storage.abstract import NaiveStorageBackend
 
 
-def mk_qr_code_cls(storage_backend):
+def mk_login_session_cls(storage_backend):
 
     assert isinstance(storage_backend, NaiveStorageBackend)
 
 
-    class QRCode:
+    class LoginSession:
         """
         :type _store: bixin_api.storage.abstract.NaiveStorageBackend
         """
@@ -24,7 +24,7 @@ def mk_qr_code_cls(storage_backend):
                 bixin_user_id=None,
         ):
             if self._store is None:
-                raise RuntimeError("Store should be set before QRCode instantiation.")
+                raise RuntimeError("Store should be set before LoginSession instantiation.")
             # 如果登录了，则is_bind应该被标记为True
             self.session_id = session_id
             self.url = url
@@ -94,6 +94,6 @@ def mk_qr_code_cls(storage_backend):
         def delete(self):
             self._store.delete(self._save_key)
 
-    QRCode._store = storage_backend
+    LoginSession._store = storage_backend
 
-    return QRCode
+    return LoginSession
