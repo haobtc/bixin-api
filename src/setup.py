@@ -12,7 +12,7 @@ requires = (
 
 setup(
     name='bixin-api',
-    version='0.0.2',
+    version='0.0.3',
     packages=find_packages(here),
     license='MIT',
     author='the-chosen-ones',
