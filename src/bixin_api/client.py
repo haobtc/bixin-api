@@ -7,7 +7,7 @@ import pendulum
 import requests
 
 from .constants import PLATFORM_SERVER
-from .exceptions import APIError
+from .exceptions import APIErrorCallFailed, normalize_network_error
 from . import constants as csts
 
 
@@ -42,7 +42,9 @@ class Client:
             expired_at = pendulum.now() + timedelta(seconds=a['expire_in'])
             access_token = a['access_token']
         else:
-            raise APIError(resp.status_code, {'text': resp.text})
+            raise APIErrorCallFailed(
+                code=resp.status_code, msg=resp.text
+            )
         self._token = access_token
         self._token_expired_at = expired_at
         return access_token, expired_at
@@ -83,8 +85,8 @@ class Client:
             data = r.json()
             if 'access_token' in data:
                 return self.request_platform(method, path, params=params)
-            raise APIError(r.status_code, data)
-        raise APIError(r.status_code, r.text)
+            raise APIErrorCallFailed(code=r.status_code, msg=data)
+        raise APIErrorCallFailed(code=r.status_code, msg=r.text)
 
     def get_user(self, user_id):
         user_info = self.request_platform('GET', '/platform/api/v1/user/%s' % user_id)
@@ -140,3 +142,53 @@ class Client:
     def pull_event(self, since_id, limit=20):
         payload = {'since_id': since_id, 'limit': limit}
         return self.request_platform('GET', '/platform/api/v1/event/list', payload)
+
+
+class PubAPI:
+    _price_path = '/currency/price?from={base}&to={quote}'
+
+    def __init__(self):
+        self.session = requests.session()
+        self.server_url = PLATFORM_SERVER
+
+    @normalize_network_error
+    def get_price(self, base, quote):
+        """
+        :return:
+        {
+            'error':0,
+            'err_msg':'success',
+            'data':{
+                'from'          :   BTC,
+                'to'            :   USD,
+                'price'         :   9350.6600,
+                'exchange'      :   false,
+                'intermediate'  :   None,
+            }
+        }
+        or
+        {
+            'error'     :   1001,
+            'err_msg'   :   'AVH is not supported',
+            'data'      :   {}
+        }
+        :rtype: float
+        """
+        path = self._price_path.format(
+            base=base.upper(),
+            quote=quote.upper()
+        )
+        url = urljoin(
+            self.server_url,
+            path,
+        )
+        resp = self.session.get(url)
+        data = resp.json()
+        if data['error'] != 0:
+            raise APIErrorCallFailed(
+                msg="Failed to fetch given price for {} {}".format(
+                    base, quote
+                ),
+                code=data['error'],
+            )
+        return data['data']['price']
