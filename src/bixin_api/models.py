@@ -44,6 +44,11 @@ class PlatformUser:
         self.fullname = fullname
         self.vendor = vendor_assets
 
+    def is_verified(self):
+        """
+        If a user passed all kinds of identification it will be true, else false.
+        """
+        return self.verified
 
     @classmethod
     def from_raw(cls, json_resp):
