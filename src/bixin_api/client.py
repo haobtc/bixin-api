@@ -73,7 +73,6 @@ class Client:
             body = urlencode(params)
             if body:
                 url = '%s?%s' % (url, body)
-                print(url)
             r = requests.get(url, **kw)
         else:
             # POST
