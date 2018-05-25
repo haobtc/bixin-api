@@ -13,6 +13,8 @@ from . import constants as csts
 
 class Client:
 
+    _bixin_ua = 'bixin_mac/2016122600 (Channel/bixin;Version/1.0.0)'
+
     def __init__(self, vendor_name, secret, access_token=None, server_url=None):
         self.vendor_name = vendor_name
         self.secret = secret
@@ -71,6 +73,7 @@ class Client:
             body = urlencode(params)
             if body:
                 url = '%s?%s' % (url, body)
+                print(url)
             r = requests.get(url, **kw)
         else:
             # POST
@@ -88,6 +91,12 @@ class Client:
             raise APIErrorCallFailed(code=r.status_code, msg=data)
         raise APIErrorCallFailed(code=r.status_code, msg=r.text)
 
+    def get_user_of_vendor(self, user_token):
+        url = '/platform/api/v1/user/im_token/{}/'.format(user_token)
+        url = urljoin(self.server_url, url)
+        resp = self.request_platform('GET', url, params={'ua': self._bixin_ua})
+        return resp
+
     def get_user(self, user_id):
         user_info = self.request_platform('GET', '/platform/api/v1/user/%s' % user_id)
         return user_info
@@ -97,7 +106,7 @@ class Client:
             'offset': offset,
             'limit': limit,
         }
-        return self.request_platform('GET', '/platform/api/v1/list', params=params)
+        return self.request_platform('GET', '/platform/api/v1/user/list', params=params)
 
     def get_transfer(self, client_uuid):
         return self.request_platform(
