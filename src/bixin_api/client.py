@@ -13,7 +13,8 @@ from . import constants as csts
 
 class Client:
 
-    _bixin_ua = 'bixin_mac/2016122600 (Channel/bixin;Version/1.0.0)'
+    # _bixin_ua = 'bixin_android/2016122600 (Channel/bixin;Version/1.0.0)'
+    _bixin_ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
 
     def __init__(self, vendor_name, secret, access_token=None, server_url=None):
         self.vendor_name = vendor_name
@@ -63,23 +64,25 @@ class Client:
             protocol = "bixin://login/confirm?{}".format(urlencode({'url': protocol}))
         return protocol
 
-    def request_platform(self, method, path, params=None, client_uuid=None):
+    def request_platform(self, method, path, params=None, client_uuid=None, kwargs=None):
         params = params or {}
         params['access_token'] = self.access_token
         url = urljoin(self.server_url, path)
-        kw = dict(timeout=self.default_timeout)
+        if kwargs is None:
+            kwargs = {}
+        kwargs.update(dict(timeout=self.default_timeout))
 
         if method == 'GET':
             body = urlencode(params)
             if body:
                 url = '%s?%s' % (url, body)
-            r = requests.get(url, **kw)
+            r = requests.get(url, **kwargs)
         else:
             # POST
             cu = params.get('client_uuid', client_uuid) or uuid.uuid4().hex
             params['client_uuid'] = cu
-            kw['data'] = params
-            r = requests.post(url, **kw)
+            kwargs['data'] = params
+            r = requests.post(url, **kwargs)
 
         if r.status_code == 200:
             return r.json()
@@ -93,7 +96,15 @@ class Client:
     def get_user_of_vendor(self, user_token):
         url = '/platform/api/v1/user/im_token/{}/'.format(user_token)
         url = urljoin(self.server_url, url)
-        resp = self.request_platform('GET', url, params={'ua': self._bixin_ua})
+        headers = {
+            'User-Agent': self._bixin_ua
+        }
+        resp = self.request_platform(
+            'GET',
+            url,
+            params={'ua': self._bixin_ua},
+            kwargs={'headers': headers}
+        )
         return resp
 
     def get_user(self, user_id):
