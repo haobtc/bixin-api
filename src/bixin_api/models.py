@@ -33,8 +33,10 @@ class PlatformUser:
             avatar_url,
             lock,
             fullname,
+            openid=None,
             **vendor_assets
     ):
+        self.openid = openid
         self.id = id
         self.username = username
         self.verified = verified
@@ -64,4 +66,5 @@ class PlatformUser:
             lock=self.lock,
             fullname=self.fullname,
             vendor=self.vendor,
+            openid=self.openid,
         )

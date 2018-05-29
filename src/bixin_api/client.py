@@ -93,7 +93,7 @@ class Client:
             raise APIErrorCallFailed(code=r.status_code, msg=data)
         raise APIErrorCallFailed(code=r.status_code, msg=r.text)
 
-    def get_user_of_vendor(self, user_token):
+    def get_user_by_im_token(self, user_token):
         url = '/platform/api/v1/user/im_token/{}/'.format(user_token)
         url = urljoin(self.server_url, url)
         headers = {
