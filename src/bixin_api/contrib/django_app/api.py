@@ -17,7 +17,7 @@ def mk_transfer_in(user_id, symbol, amount, address=None, type='transfer_in'):
         user=BixinUser.objects.get(id=user_id),
         address=address,
     )
-    return deposit.order_id
+    return deposit.order_id, address
 
 
 def get_transfer_status(order_id):
@@ -30,7 +30,8 @@ def get_transfer_status(order_id):
 
 def subscribe_transfer_event(callback):
     """
-    callback(order_id, order_status)
+    callback(order_id, order_type, order_status)
     order_status will be 'SUCCESS' or 'FAILED'
+    order_type will be 'transfer_in' or 'transfer_out'
     """
     return
