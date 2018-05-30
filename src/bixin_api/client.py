@@ -191,11 +191,7 @@ class Client:
               '&currency={currency}' \
               '&order_id={order_id}' \
               '&category=deposit'
-        resp = self.get_vendor_address_list(
-            currency=currency,
-        )
-        assert len(resp['items']) > 0
-        address = resp['items'][0]
+        address = self.get_first_vendor_address(currency=currency)
         url = url.format(
             order_id=order_id,
             address=address,
@@ -203,6 +199,14 @@ class Client:
             amount=amount,
         )
         return url
+
+    def get_first_vendor_address(self, currency='BTC'):
+        resp = self.get_vendor_address_list(
+            currency=currency,
+        )
+        assert len(resp['items']) > 0
+        address = resp['items'][0]
+        return address
 
     def get_vendor_address_list(self, currency='BTC', offset=0, limit=20):
         params = {

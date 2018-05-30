@@ -34,6 +34,7 @@ class Deposit(BaseModel):
     symbol = models.CharField(max_length=32)
     status = models.CharField(max_length=32, choices=STATUS_CHOICES, default='PENDING')
     amount = BixinDecimalField(default=0)
+    address = models.CharField(max_length=128)
     user = models.ForeignKey(
         BixinUser,
         on_delete=models.CASCADE,
