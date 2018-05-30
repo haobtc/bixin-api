@@ -26,3 +26,11 @@ def get_transfer_status(order_id):
     """
     deposit = Deposit.objects.get(order_id=order_id)
     return deposit.status
+
+
+def subscribe_transfer_event(callback):
+    """
+    callback(order_id, order_status)
+    order_status will be 'SUCCESS' or 'FAILED'
+    """
+    return
