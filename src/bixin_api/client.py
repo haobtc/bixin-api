@@ -124,7 +124,44 @@ class Client:
             {'client_uuid': client_uuid},
         )
 
-    def get_transfer_list(self, offset=0, limit=100, status=None, type=None, order='asc'):
+    def get_transfer_list(self, offset=0, limit=100, status=None, type=None, order='desc'):
+        """
+        {
+            'has_more': False,
+            'items': [
+                {
+                    'amount': '0.001',
+                    'args': {'order_id': 'f99cbe34a3064bb398d0c49c1eb02120',
+                             'outside_transfer_type': 'SINGLE',
+                             'transfer_type': ''},
+                    'category': '',
+                    'client_uuid': '5aa055014cbe4edbbae70432ea912cab',
+                    'currency': 'ETH',
+                    'id': 1169842,
+                    'note': '',
+                    'reply_transfer_id': 0,
+                    'status': 'SUCCESS',
+                    'user.id': 125103,
+                    'vendor': 'bitexpressbeta'
+                },
+               {
+                    'amount': '0.001',
+                    'args': {'order_id': '0bd811cea8c041b992264d1950a2b8b7',
+                             'outside_transfer_type': 'SINGLE',
+                             'transfer_type': ''},
+                    'category': '',
+                    'client_uuid': '88fd4f0888044043be01ed05d479921c',
+                    'currency': 'ETH',
+                    'id': 1169807,
+                    'note': '',
+                    'reply_transfer_id': 0,
+                    'status': 'SUCCESS',
+                    'user.id': 125103,
+                    'vendor': 'bitexpressbeta'
+               },
+            ]
+        }
+        """
         return self.request_platform(
             'GET', '/platform/api/v1/transfer/list',
             {
@@ -146,6 +183,26 @@ class Client:
         withdraw.status = 'SENT'
         withdraw.save()
         return r
+
+    def get_deposit_protocol(self, currency, amount, order_id):
+        url = 'bixin://currency_transfer/' \
+              '?target_addr={address}' \
+              '&amount={amount}' \
+              '&currency={currency}' \
+              '&order_id={order_id}' \
+              '&category=deposit'
+        resp = self.get_vendor_address_list(
+            currency=currency,
+        )
+        assert len(resp['items']) > 0
+        address = resp['items'][0]
+        url = url.format(
+            order_id=order_id,
+            address=address,
+            currency=currency,
+            amount=amount,
+        )
+        return url
 
     def get_vendor_address_list(self, currency='BTC', offset=0, limit=20):
         params = {
