@@ -4,6 +4,7 @@ from bixin_api.contrib.django_app.config import get_client
 from django.db import transaction
 
 from .models import Deposit, BixinUser
+from .registry import send_event
 
 
 client = get_client()
@@ -38,3 +39,4 @@ def sync_transfer_to_deposit():
 
             deposit.mark_as_succeed(amount=amount)
             deposit.save()
+            send_event(deposit.order_id, "transfer_in", deposit.status)
