@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-    help = 'Closes the specified poll for voting'
+    help = 'sync deposit order for once'
 
     def handle(self, *args, **options):
         from bixin_api.contrib.django_app.synchronizers import sync_transfer_to_deposit
