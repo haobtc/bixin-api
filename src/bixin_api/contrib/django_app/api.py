@@ -1,5 +1,5 @@
-from bixin_api.contrib.django_app.config import get_client
-from bixin_api.contrib.django_app.models import Deposit, BixinUser
+from .config import get_client
+from .models import Deposit, BixinUser
 
 
 def get_vendor_address(symbol):
@@ -34,4 +34,6 @@ def subscribe_transfer_event(callback):
     order_status will be 'SUCCESS' or 'FAILED'
     order_type will be 'transfer_in' or 'transfer_out'
     """
-    return
+    from .registry import register_callback
+    assert callable(callback)
+    register_callback(callback)
