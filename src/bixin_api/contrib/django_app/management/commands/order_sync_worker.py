@@ -9,17 +9,17 @@ from bixin_api.contrib.django_app.synchronizers import sync_transfer_to_deposit
 class StoppableThread(Thread):
     def __init__(self):
         super(StoppableThread, self).__init__()
-        self._stop = False
+        self._stopped = False
         self.setDaemon(True)
 
     def stop(self):
-        self._stop = True
+        self._stopped = True
 
 
 class TransferSync(StoppableThread):
 
     def run(self):
-        while not self._stop:
+        while not self._stopped:
             time.sleep(0.05)
             try:
                 sync_transfer_to_deposit()
