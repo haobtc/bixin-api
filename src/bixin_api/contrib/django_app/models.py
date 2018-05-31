@@ -62,7 +62,7 @@ class Withdraw(BaseModel):
         max_length=64,
         db_index=True
     )
-    address = models.CharField(max_length=128)
+    address = models.CharField(max_length=128, null=True, blank=True)
     symbol = models.CharField(max_length=32)
     status = models.CharField(max_length=32, choices=STATUS_CHOICES, default='PENDING')
     amount = BixinDecimalField(default=0)

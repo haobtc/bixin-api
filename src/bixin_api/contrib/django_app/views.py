@@ -47,7 +47,6 @@ def transfer_debug_qr_code(request):
         symbol='ETH',
         user=BixinUser.objects.first(),
     )
-    print(deposit)
     client = get_client()
     url = client.get_deposit_protocol(
         currency='ETH',

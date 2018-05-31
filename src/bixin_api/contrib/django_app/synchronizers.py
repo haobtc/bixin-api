@@ -47,7 +47,9 @@ def sync_transfer_to_deposit():
 def execute_withdraw():
     pending_ids = Withdraw.get_pending_ids()
 
-    for order_id, user_id in pending_ids:
+    for order in pending_ids:
+        order_id = order['order_id']
+        user_id = order['user__id']
         with transaction.atomic():
             try:
                 withdraw = Withdraw.objects.select_for_update().get(
@@ -63,7 +65,7 @@ def execute_withdraw():
             # This known issue should be fixed.
             try:
                 client.send_withdraw(
-                    withdraw.save()
+                    **withdraw.as_transfer_args()
                 )
             except Exception:
                 logging.exception(

@@ -28,11 +28,12 @@ class Command(BaseCommand):
         parser.add_argument(
             '--once',
             action='store_true',
-            dest='delete',
+            dest='once',
             help='only run once',
         )
 
-    def handle(self, once, *args, **options):
+    def handle(self, *args, **options):
+        once = options.pop('once', False)
         if once:
             execute_withdraw()
             self.stdout.write(

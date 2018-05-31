@@ -186,7 +186,7 @@ class Client:
             '/platform/api/v1/withdraw/create',
             params=data,
         )
-        return r.status_code == 200
+        return True
 
     def get_deposit_protocol(self, currency, amount, order_id):
         url = 'bixin://currency_transfer/' \
