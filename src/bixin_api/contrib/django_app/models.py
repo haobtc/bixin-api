@@ -27,10 +27,9 @@ class BixinUser(BaseModel):
 
 
 class Deposit(BaseModel):
-    STATUS_CHOICES = [(x, x) for x in ['PENDING', 'SUCCESS']]
+    STATUS_CHOICES = [(x, x) for x in ['PENDING', 'SUCCESS', 'FAILED']]
 
     order_id = models.CharField(default=hex_uuid, max_length=64, db_index=True)
-    nonce = models.CharField(default=hex_uuid, max_length=64)
     symbol = models.CharField(max_length=32)
     status = models.CharField(max_length=32, choices=STATUS_CHOICES, default='PENDING')
     amount = BixinDecimalField(default=0)
@@ -42,13 +41,77 @@ class Deposit(BaseModel):
     )
 
     @property
+    def order_type(self):
+        return 'transfer_in'
+
+    @property
     def is_pending(self):
-        return self.status != 'PENDING'
+        return self.status == 'PENDING'
 
     def mark_as_succeed(self, amount=None):
         self.status = 'SUCCESS'
         if amount is not None:
             self.amount = amount
+
+
+class Withdraw(BaseModel):
+    STATUS_CHOICES = [(x, x) for x in ['PENDING', 'SUCCESS', 'FAILED']]
+
+    order_id = models.CharField(
+        default=hex_uuid,
+        max_length=64,
+        db_index=True
+    )
+    address = models.CharField(max_length=128)
+    symbol = models.CharField(max_length=32)
+    status = models.CharField(max_length=32, choices=STATUS_CHOICES, default='PENDING')
+    amount = BixinDecimalField(default=0)
+    user = models.ForeignKey(
+        BixinUser,
+        on_delete=models.CASCADE,
+        related_name='withdraw'
+    )
+
+    def __str__(self):
+        return '<withdraw - id: {} symbol: {} amount {} user_id: {}>'.format(
+            self.order_id,
+            self.symbol,
+            self.amount,
+            self.user.id
+        )
+
+    def __unicode__(self):
+        return self.__str__()
+
+    @classmethod
+    def get_pending_ids(cls):
+        return cls.objects.filter(status='PENDING').values('order_id', 'user__id')
+
+    @property
+    def order_type(self):
+        return 'transfer_out'
+
+    def as_transfer_args(self):
+        data = {
+            'currency': self.symbol,
+            'category': self.order_type,
+            'amount': str(self.amount),
+            'client_uuid': self.order_id,
+            'user_id': self.user.id,
+        }
+        return data
+
+    @property
+    def is_pending(self):
+        return self.status == 'PENDING'
+
+    def mark_as_succeed(self):
+        self.status = 'SUCCESS'
+        self.save()
+
+    def mark_as_failed(self):
+        self.status = 'FAILED'
+        self.save()
 
 
 class Event(models.Model):

@@ -1,32 +1,7 @@
-import logging
 import time
-from threading import Thread
 
+from bixin_api.contrib.django_app.synchronizers import TransferSync
 from django.core.management.base import BaseCommand
-from bixin_api.contrib.django_app.synchronizers import sync_transfer_to_deposit
-
-
-class StoppableThread(Thread):
-    def __init__(self):
-        super(StoppableThread, self).__init__()
-        self._stopped = False
-        self.setDaemon(True)
-
-    def stop(self):
-        self._stopped = True
-
-
-class TransferSync(StoppableThread):
-
-    def run(self):
-        while not self._stopped:
-            time.sleep(0.05)
-            try:
-                sync_transfer_to_deposit()
-            except Exception:
-                logging.exception(
-                    "Failed to sync deposit orders:"
-                )
 
 
 def main():
@@ -48,4 +23,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         main()
+
+
 

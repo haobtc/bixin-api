@@ -1,5 +1,7 @@
+import logging
+
 from .config import get_client
-from .models import Deposit, BixinUser
+from .models import Deposit, BixinUser, Withdraw
 
 
 def get_vendor_address(symbol):
@@ -8,7 +10,10 @@ def get_vendor_address(symbol):
     return address
 
 
-def mk_transfer_in(user_id, symbol, amount, address=None, type='transfer_in'):
+def mk_transfer_in(user_id, symbol, amount, address=None):
+    """
+    数字货币还款/添加质押物
+    """
     if address is None:
         address = get_vendor_address(symbol)
     deposit = Deposit.objects.create(
@@ -18,6 +23,16 @@ def mk_transfer_in(user_id, symbol, amount, address=None, type='transfer_in'):
         address=address,
     )
     return deposit.order_id, address
+
+
+def mk_transfer_out(user_id, symbol, amount):
+    withdraw = Withdraw.objects.create(
+        address=None,
+        symbol=symbol,
+        amount=amount,
+        user=BixinUser.objects.get(id=user_id)
+    )
+    return withdraw.order_id
 
 
 def get_transfer_status(order_id):
@@ -37,3 +52,4 @@ def subscribe_transfer_event(callback):
     from .registry import register_callback
     assert callable(callback)
     register_callback(callback)
+

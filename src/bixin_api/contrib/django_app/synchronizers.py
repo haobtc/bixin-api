@@ -1,9 +1,12 @@
 import decimal
+import logging
+import time
+from threading import Thread
 
 from bixin_api.contrib.django_app.config import get_client
 from django.db import transaction
 
-from .models import Deposit, BixinUser
+from .models import Deposit, BixinUser, Withdraw
 from .registry import send_event
 
 
@@ -38,5 +41,71 @@ def sync_transfer_to_deposit():
                 continue
 
             deposit.mark_as_succeed(amount=amount)
-            deposit.save()
-            send_event(deposit.order_id, "transfer_in", deposit.status)
+        send_event(deposit.order_id, deposit.order_type, deposit.status)
+
+
+def execute_withdraw():
+    pending_ids = Withdraw.get_pending_ids()
+
+    for order_id, user_id in pending_ids:
+        with transaction.atomic():
+            try:
+                withdraw = Withdraw.objects.select_for_update().get(
+                    order_id=order_id,
+                    user__id=user_id,
+                )
+            except Withdraw.DoesNotExist:
+                continue
+
+            if withdraw.status != 'PENDING':
+                continue
+            # TODO(winkidney): user may withdraw twice if the worker killed
+            # This known issue should be fixed.
+            try:
+                client.send_withdraw(
+                    withdraw.save()
+                )
+            except Exception:
+                logging.exception(
+                    "Failed to do withdraw (transfer-out) operation for %s" % withdraw,
+                )
+                withdraw.mark_as_failed()
+            else:
+                withdraw.mark_as_succeed()
+        send_event(withdraw.order_id, withdraw.order_type, withdraw.status)
+
+
+class StoppableThread(Thread):
+    def __init__(self):
+        super(StoppableThread, self).__init__()
+        self._stopped = False
+        self.setDaemon(True)
+
+    def stop(self):
+        self._stopped = True
+
+
+class TransferSync(StoppableThread):
+
+    def run(self):
+        while not self._stopped:
+            time.sleep(0.05)
+            try:
+                sync_transfer_to_deposit()
+            except Exception:
+                logging.exception(
+                    "Failed to sync deposit orders:"
+                )
+
+
+class WithdrawExecutor(StoppableThread):
+
+    def run(self):
+        while not self._stopped:
+            time.sleep(0.2)
+            try:
+                execute_withdraw()
+            except Exception:
+                logging.exception(
+                    "Failed to sync deposit orders:"
+                )

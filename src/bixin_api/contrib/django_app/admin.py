@@ -11,5 +11,6 @@ admin.site.register(
         models.BixinUser,
         models.Event,
         models.Deposit,
+        models.Withdraw,
     )
 )

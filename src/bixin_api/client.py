@@ -173,16 +173,20 @@ class Client:
             }
         )
 
-    def send_withdraw(self, withdraw):
-        assert withdraw.status == 'PENDING'
+    def send_withdraw(self, currency, amount, user_id, category=None, client_uuid=None):
+        data = dict(
+            currency=currency,
+            category=category,
+            amount=amount,
+            user=user_id,
+            client_uuid=client_uuid,
+        )
         r = self.request_platform(
             'POST',
             '/platform/api/v1/withdraw/create',
-            withdraw.get_payload()
+            params=data,
         )
-        withdraw.status = 'SENT'
-        withdraw.save()
-        return r
+        return r.status_code == 200
 
     def get_deposit_protocol(self, currency, amount, order_id):
         url = 'bixin://currency_transfer/' \
