@@ -68,3 +68,43 @@ class PlatformUser:
             vendor=self.vendor,
             openid=self.openid,
         )
+
+
+class BixinVendorUser:
+    """
+    type VendorUserInfo {
+        openid: String
+        target_id: String
+        username: String
+        fullname: String
+        avatar_url: String
+        verified: Boolean
+        is_locked: Boolean
+        wallet_balance: JSONString
+        vendor_fund_balance: JSONString
+        getVerifiedInfo: UserVerifyInfo
+    }
+    """
+    def __init__(
+            self,
+            openid,
+            target_id,
+            username,
+            fullname,
+            avatar_url,
+            verified,
+            is_locked,
+            wallet_balance,
+            vendor_fund_balance,
+            getVerifiedInfo
+    ):
+        self.openid = openid
+        self.target_id = target_id
+        self.username = username
+        self.fullname = fullname
+        self.avatar_url = avatar_url
+        self.verified = verified
+        self.is_locked = is_locked
+        self.wallet_balance = wallet_balance
+        self.vendor_fund_balance = vendor_fund_balance
+        self.verified_info = getVerifiedInfo
