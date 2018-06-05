@@ -258,7 +258,6 @@ class PubAPI:
         )
         resp = self.session.get(url)
         data = resp.json()
-        import pdb;pdb.set_trace()
         if not data['ok']:
             raise APIErrorCallFailed(
                 msg="Failed to fetch given price for {} {}".format(
