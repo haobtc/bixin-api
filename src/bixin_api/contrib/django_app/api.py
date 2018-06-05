@@ -1,4 +1,7 @@
 import logging
+from decimal import Decimal
+
+from bixin_api.client import PubAPI
 
 from .config import get_client
 from .models import Deposit, BixinUser, Withdraw
@@ -53,3 +56,8 @@ def subscribe_transfer_event(callback):
     assert callable(callback)
     register_callback(callback)
 
+
+def get_exchange_rate(base_coin: str, quote: str) -> Decimal:
+    api = PubAPI()
+    ret = api.get_price(base_coin.upper(), quote.upper())
+    return Decimal(ret)

@@ -229,38 +229,28 @@ class Client:
 
 
 class PubAPI:
-    _price_path = '/currency/price?from={base}&to={quote}'
+    _price_path = '/api/v1/currency/ticker?symbol={base}_{quote}'
 
-    def __init__(self):
+    def __init__(self, server_base_url=None):
         self.session = requests.session()
-        self.server_url = PLATFORM_SERVER
+        self.server_url = server_base_url or PLATFORM_SERVER
 
     @normalize_network_error
     def get_price(self, base, quote):
         """
         :return:
         {
-            'error':0,
-            'err_msg':'success',
-            'data':{
-                'from'          :   BTC,
-                'to'            :   USD,
-                'price'         :   9350.6600,
-                'exchange'      :   false,
-                'intermediate'  :   None,
+            ok: true,
+            data: {
+                price: "13.06400384",
+                is_converted: true
             }
-        }
-        or
-        {
-            'error'     :   1001,
-            'err_msg'   :   'AVH is not supported',
-            'data'      :   {}
         }
         :rtype: float
         """
         path = self._price_path.format(
-            base=base.upper(),
-            quote=quote.upper()
+            base=base.lower(),
+            quote=quote.lower()
         )
         url = urljoin(
             self.server_url,
@@ -268,11 +258,11 @@ class PubAPI:
         )
         resp = self.session.get(url)
         data = resp.json()
-        if data['error'] != 0:
+        import pdb;pdb.set_trace()
+        if not data['ok']:
             raise APIErrorCallFailed(
                 msg="Failed to fetch given price for {} {}".format(
                     base, quote
                 ),
-                code=data['error'],
             )
         return data['data']['price']
