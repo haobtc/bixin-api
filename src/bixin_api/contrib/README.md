@@ -16,9 +16,15 @@ bixin-api django-app
 
 ```
 BIXIN_CONFIG = {
-    'vendor_name': 'bitexpressbeta',
-    'secret': 'e53bb791a09f4071917954dbf226c61d',
-    'aes_key': 'a3a763b4fe2c44aba91f32db9dcc9801',
+    'client': {
+        'server_url': None,     # None is valid here
+        'vendor_name': '',
+        'secret': '',
+        'aes_key': '',
+    },
+    'graphql_client': {
+        'server_url': None,     # None is valid here
+    }
 }
 ```
 

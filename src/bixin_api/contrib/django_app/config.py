@@ -1,4 +1,5 @@
 from bixin_api import Client
+from bixin_api.client import GraphQLClient
 
 _BASE_KEYS = {
     'client',
@@ -11,13 +12,10 @@ _CLIENT_REQUIRED_KEYS = {
     'aes_key',
 }
 
-_GRAPHQL_REQUIRED_KEYS = {
-    'graphql_token',
-    'url',
-}
+_GRAPHQL_REQUIRED_KEYS = {}
 
 
-def get_config():
+def get_client_config():
     from django.conf import settings
 
     if not hasattr(settings, 'BIXIN_CONFIG'):
@@ -33,12 +31,7 @@ def get_config():
     return bixin_config
 
 
-def get_client():
-    config = get_config()
-    return Client(config['vendor_name'], config['secret'])
-
-
-def get_graphql_client():
+def get_gql_config():
     from django.conf import settings
 
     if not hasattr(settings, 'BIXIN_CONFIG'):
@@ -52,3 +45,19 @@ def get_graphql_client():
                 "config <%s> should be set in graphql_client config"
             )
     return bixin_config
+
+
+def get_client():
+    config = get_client_config()
+    return Client(config['vendor_name'], config['secret'], server_url=config.get('server_url'))
+
+
+def get_gql_client():
+    gql_config = get_gql_config()
+    client_config = get_client_config()
+    return GraphQLClient(
+        client_config['vendor_name'],
+        client_config['secret'],
+        server_url=client_config.get('server_url'),
+        gql_server_url=gql_config.get('server_url')
+    )

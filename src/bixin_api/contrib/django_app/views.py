@@ -4,7 +4,7 @@ from bixin_api.contrib.django_app.decorators import require_debug
 from bixin_api.event import make
 from django.db import transaction
 
-from .config import get_config, get_client
+from .config import get_client_config, get_client
 from django.http import HttpResponseNotAllowed, JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -15,7 +15,7 @@ from . import models
 def events_view(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(("POST",))
-    aes_key = get_config()['aes_key']
+    aes_key = get_client_config()['aes_key']
     event = make(request.body, aes_key=aes_key)
     data = event.as_dict()
     event_id = data.pop('event_id')
