@@ -20,10 +20,9 @@ class BixinUser(BaseModel):
     """
     Only stable properties will be stored here.
     """
-    id = models.IntegerField(unique=True, primary_key=True)
     username = models.CharField(max_length=200, blank=True, null=True, default='')
     target_id = models.CharField(max_length=32, unique=True, null=True)
-    openid = models.CharField(max_length=32, unique=True, null=True)
+    openid = models.CharField(max_length=32, unique=True, null=True, db_index=True)
 
 
 class Deposit(BaseModel):
@@ -97,7 +96,7 @@ class Withdraw(BaseModel):
             'category': self.order_type,
             'amount': str(self.amount),
             'client_uuid': self.order_id,
-            'user_id': self.user.id,
+            'openid': self.user.openid,
         }
         return data
 

@@ -3,28 +3,20 @@ import logging
 import time
 from threading import Thread
 
-from bixin_api.contrib.django_app.config import get_client
+from bixin_api.contrib.django_app.config import get_gql_client
 from django.db import transaction
 
-from .models import Deposit, BixinUser, Withdraw
+from .models import Deposit, Withdraw
 from .registry import send_event
 
 
-client = get_client()
+client = get_gql_client()
 
 
 def sync_transfer_to_deposit():
-    resp = client.get_transfer_list(status='SUCCESS', limit=20, type='deposit', order='desc')
-    for transfer in resp['items']:
-        user_id = transfer['user.id']
-        user = BixinUser.objects.filter(id=user_id).first()
-        if user is None:
-            raise ValueError(
-                "Given user with user_id %s dost not exist" % user_id
-            )
-        deposit_id = transfer['args'].get('order_id')
-        amount = decimal.Decimal(transfer['amount'])
-
+    transfers = client.get_transfer_list(status='SUCCESS', limit=20, type='deposit', order='desc')
+    for transfer in transfers:
+        deposit_id = transfer['order_id']
         if not deposit_id:
             continue
 
@@ -32,15 +24,15 @@ def sync_transfer_to_deposit():
             try:
                 deposit = Deposit.objects.select_for_update().get(
                     order_id=deposit_id,
-                    user=user,
                 )
             except Deposit.DoesNotExist:
                 continue
 
             if deposit.status != 'PENDING':
                 continue
-
-            deposit.mark_as_succeed(amount=amount)
+            if transfer['status'] != 'SUCCESS':
+                continue
+            deposit.mark_as_succeed()
         send_event(deposit.order_id, deposit.order_type, deposit.status)
 
 
@@ -49,12 +41,10 @@ def execute_withdraw():
 
     for order in pending_ids:
         order_id = order['order_id']
-        user_id = order['user__id']
         with transaction.atomic():
             try:
                 withdraw = Withdraw.objects.select_for_update().get(
                     order_id=order_id,
-                    user__id=user_id,
                 )
             except Withdraw.DoesNotExist:
                 continue
@@ -64,7 +54,7 @@ def execute_withdraw():
             # TODO(winkidney): user may withdraw twice if the worker killed
             # This known issue should be fixed.
             try:
-                client.send_withdraw(
+                client.transfer2openid(
                     **withdraw.as_transfer_args()
                 )
             except Exception:

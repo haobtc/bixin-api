@@ -65,8 +65,8 @@ def transfer_debug_qr_code(request):
 def transfer_out(request):
     from bixin_api.contrib.django_app.api import mk_transfer_out
     mk_transfer_out(
-        user_id=125103,
-        symbol='ETH',
+        user_id="1111111",
+        symbol='BTC',
         amount=0.001,
     )
     return HttpResponse('done')

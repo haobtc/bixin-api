@@ -7,7 +7,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         from bixin_api.contrib.django_app.models import BixinUser
         BixinUser.objects.create(
-            id=125103,
             username="hi-iam-user",
             target_id='111111',
             openid='1111111'

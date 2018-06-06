@@ -131,6 +131,8 @@ class Client:
 
     def get_transfer_list(self, offset=0, limit=100, status=None, type=None, order='desc'):
         """
+        :param type: 'deposit' or None
+        return
         {
             'has_more': False,
             'items': [
@@ -373,3 +375,62 @@ class GraphQLClient(Client):
         query = gql(query)
         ret = self.gql.execute(query)
         return ret['sendSmsByPhone']['ok']
+
+    def transfer2openid(self, currency, amount, openid, category=None, client_uuid=None):
+        client_uuid = '"%s"' % client_uuid if client_uuid else 'null'
+        category = '"%s"' % category if category else 'null'
+        query = """
+        mutation{
+          withdrawByOpenid(
+            withdraw_data: {
+              currency: "%s",
+              amount: "%s",
+              category: %s,
+              client_uuid: %s,
+            },
+            openid: "%s",
+            access_token: "%s",
+          ){
+            transfer{
+              status
+            }
+          }
+        }
+        """ % (
+            currency, amount, category,
+            client_uuid, openid, self.access_token
+        )
+        query = gql(query)
+        ret = self.gql.execute(query)
+        return ret['transfer']['status'] == 'SUCCESS'
+
+    def get_transfer_list(self, offset=0, limit=100, status=None, type=None, order='desc'):
+        """
+        return
+        [
+            {'order_id': '237e3920c6f04923968d0a8ec096613d', 'status': 'SUCCESS'}
+            {'order_id': None, 'status': 'SUCCESS'}
+        ]
+        """
+        assert order in ('desc', 'asc')
+        query = """
+        query {
+          transfers(
+            access_token: "%s",
+            limit: %s,
+            offset: %s,
+            order: %s,
+          ){
+            hasMore
+            totalCount
+            detail {
+              order_id
+              status
+              created_at
+            }
+          }
+        }
+        """ % (self.access_token, limit, offset, '"%s"' % order)
+        query = gql(query)
+        ret = self.gql.execute(query)
+        return ret['transfers']['detail']

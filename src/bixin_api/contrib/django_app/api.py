@@ -22,7 +22,7 @@ def mk_transfer_in(user_id, symbol, amount, address=None):
     deposit = Deposit.objects.create(
         amount=amount,
         symbol=symbol,
-        user=BixinUser.objects.get(id=user_id),
+        user=BixinUser.objects.get(openid=user_id),
         address=address,
     )
     return deposit.order_id, address
@@ -33,7 +33,7 @@ def mk_transfer_out(user_id, symbol, amount):
         address=None,
         symbol=symbol,
         amount=amount,
-        user=BixinUser.objects.get(id=user_id)
+        user=BixinUser.objects.get(openid=user_id)
     )
     return withdraw.order_id
 
