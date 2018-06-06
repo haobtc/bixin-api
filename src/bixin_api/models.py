@@ -1,3 +1,4 @@
+import json
 
 
 class PlatformUser:
@@ -82,7 +83,7 @@ class BixinVendorUser:
         is_locked: Boolean
         wallet_balance: JSONString
         vendor_fund_balance: JSONString
-        getVerifiedInfo: UserVerifyInfo
+        verifiedInfo: userVerifyInfo
     }
     """
     def __init__(
@@ -96,7 +97,7 @@ class BixinVendorUser:
             is_locked,
             wallet_balance,
             vendor_fund_balance,
-            getVerifiedInfo
+            verifiedInfo,
     ):
         self.openid = openid
         self.target_id = target_id
@@ -105,6 +106,6 @@ class BixinVendorUser:
         self.avatar_url = avatar_url
         self.verified = verified
         self.is_locked = is_locked
-        self.wallet_balance = wallet_balance
-        self.vendor_fund_balance = vendor_fund_balance
-        self.verified_info = getVerifiedInfo
+        self.wallet_balance = json.loads(wallet_balance) if wallet_balance else {}
+        self.vendor_fund_balance = json.loads(vendor_fund_balance) if vendor_fund_balance else {}
+        self.verified_info = verifiedInfo

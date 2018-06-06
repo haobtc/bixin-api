@@ -5,6 +5,10 @@ from urllib.parse import urljoin, urlencode
 
 import pendulum
 import requests
+from bixin_api.models import BixinVendorUser
+
+from gql import gql, Client as GQLClient
+from gql.transport.requests import RequestsHTTPTransport
 
 from .constants import PLATFORM_SERVER
 from .exceptions import APIErrorCallFailed, normalize_network_error
@@ -29,7 +33,8 @@ class Client:
     def access_token(self):
         with Lock():
             if self._token is not None:
-                return self._token
+                if self._token_expired_at < pendulum.now():
+                    return self._token
             self._token, self._token_expired_at = self.fetch_access_token()
         return self._token
 
@@ -265,3 +270,79 @@ class PubAPI:
                 ),
             )
         return data['data']['price']
+
+
+class GraphQLClient(Client):
+    _gql_server_url = 'https://bixin.im/platform/graphql'
+    _gql_ua = 'bixin_android/2018051401 (Channel/bixin; com.bixin.bixin_android; Version/3.1.3)'
+
+    def __init__(self, vendor_name, secret, access_token=None, server_url=None, gql_server_url=None):
+        super(GraphQLClient, self).__init__(
+            vendor_name=vendor_name,
+            secret=secret,
+            access_token=access_token,
+            server_url=server_url,
+        )
+        self.gql_server_url = gql_server_url or self._gql_server_url
+        transport = RequestsHTTPTransport(
+            url=self.gql_server_url,
+            use_json=True,
+        )
+        self.gql = GQLClient(transport=transport, fetch_schema_from_transport=True)
+
+    def get_user_by_im_token(self, user_token):
+        """
+        ret:
+        {'userByImToken': {'avatar_url': None,
+               'fullname': '',
+               'is_locked': False,
+               'openid': 'b97812328ead4d57b992f18d3f168ccb',
+               'target_id': 'f2a7c018ed4a47b999e1c4893da42d79',
+               'username': 'bx_u6962575070',
+               'vendor_fund_balance': None,
+               'verified': False,
+               'verifiedInfo': {'bankcard': '{
+                                    "verified": false,
+                                    'real_name': '',    # should be exist if true
+                                    'card_number': '',  # should be exist if true
+                                }',
+                                'face': '{"verified": false}',
+                                'idcard': '{"verified": false}',
+                                'passport': '{"verified": false}',
+                                'phone': '+8615650758818'},
+               'wallet_balance': '{"DASH": "0", "AE": "0", "LTC": "0", '
+                                 '"READ": "0", "DOGE": "0", "ELF": "0", '
+                                 '"DAI": "0", "EOS": "0", "TRX": "0", '
+                                 '"AVH": "0", "MKR": "0", "BTC": "0", '
+                                 '"VEN": "0", "FGC": "0", "ETH": "0", '
+                                 '"RDN": "0", "USDT": "0", "ENU": "0"}'}}
+
+        """
+        access_token = self.access_token
+        query = """
+        query {
+            userByImToken(access_token: "%s", im_token: "%s", ua_str:"%s"){
+                openid
+                target_id
+                username
+                fullname
+                avatar_url
+                verified
+                is_locked
+                wallet_balance
+                vendor_fund_balance
+                verifiedInfo{
+                    phone
+                    idcard
+                    passport
+                    bankcard
+                    face
+                }
+            }
+        }
+        """ % (access_token, user_token, self._gql_ua)
+        query = gql(query)
+        ret = self.gql.execute(query)
+        return BixinVendorUser(
+            **ret['userByImToken'],
+        )

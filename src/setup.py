@@ -7,6 +7,7 @@ requires = (
     "pendulum>=1.3.2",
     "requests",
     "pycrypto",
+    'gql',
 )
 
 
