@@ -355,3 +355,21 @@ class GraphQLClient(Client):
         return BixinVendorUser(
             **ret['userByImToken'],
         )
+
+    def send_verification_sms(self, phone: str, code) -> bool:
+        if not phone.startswith('+86'):
+            phone = "+86" + phone
+        query = """
+        mutation {
+            sendSmsByPhone(
+                phone: "%s", 
+                sms_data:{sms_args: "[('code', '%s')]", notify_type: "verify_code"}, 
+                access_token: "%s"
+            ){
+                ok
+          }
+        }
+        """ % (phone, code, self.access_token)
+        query = gql(query)
+        ret = self.gql.execute(query)
+        return ret['sendSmsByPhone']['ok']
