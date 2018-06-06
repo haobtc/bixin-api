@@ -303,12 +303,21 @@ class GraphQLClient(Client):
                'verified': False,
                'verifiedInfo': {'bankcard': '{
                                     "verified": false,
-                                    'real_name': '',    # should be exist if true
                                     'card_number': '',  # should be exist if true
                                 }',
                                 'face': '{"verified": false}',
-                                'idcard': '{"verified": false}',
-                                'passport': '{"verified": false}',
+                                'idcard': '{
+                                    "verified": false,
+                                    'real_name': '',    # should be exist if true
+                                    'card_number': '',  # should be exist if true
+                                }',
+                                'passport': '{
+                                    "verified": false,
+                                    'first_name': '',
+                                    'last_name': '',
+                                    'country': '',
+                                    'card_number': '',
+                                }',
                                 'phone': '+8615650758818'},
                'wallet_balance': '{"DASH": "0", "AE": "0", "LTC": "0", '
                                  '"READ": "0", "DOGE": "0", "ELF": "0", '
