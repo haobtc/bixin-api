@@ -15,8 +15,6 @@ class Command(BaseCommand):
                 target_id='111111',
             )
         )
-        user = get_user_model()
-        user.objects.create_superuser(username='hallow', password="111111", email='a@b.com')
         self.stdout.write(
             self.style.SUCCESS("succeed")
         )
