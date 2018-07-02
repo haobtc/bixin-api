@@ -28,7 +28,7 @@ def send_event(order_id, order_type, order_status):
 def _call(sender, order_id=None, order_type=None, order_status=None, **kwargs):
     for fn in order_callback_registry:
         try:
-            fn(order_id, order_type, order_status)
+            fn(order_id, order_status)
         except Exception:
             logging.exception(
                 "Failed to call callback %s" % fn.__name__
